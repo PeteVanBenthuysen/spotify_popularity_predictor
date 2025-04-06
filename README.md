@@ -6,6 +6,29 @@ The goal of this project is to **predict whether a song is popular** on Spotify,
 ## **Why This Goal?**
 Getting a song played on mainstream radio or reaching a large audience on streaming platforms is **not an easy task**. There are numerous factors—such as tempo, danceability, energy, and other audio features—that contribute to a song's success. By analyzing these features, we aim to build a model that can predict whether a song is likely to become popular, based on its characteristics.
 
+## **Project Requirements**
+This project requires the following Python libraries for data analysis, modeling, and visualization:
+
+```plaintext
+# Latest stable versions as of April 2025
+pandas==2.2.3
+numpy==2.2.4
+scikit-learn==1.6.1
+matplotlib==3.10.1
+seaborn==0.13.2
+jupyter==1.1.1
+```
+
+## Dataset
+
+The dataset used in this project is the **Ultimate Spotify Tracks DB** from Kaggle.
+
+To get started, follow these steps:
+
+1. Go to the [Kaggle dataset page](https://www.kaggle.com/zaheenhamidani/ultimate-spotify-tracks-db).
+2. Download the dataset and unzip it.
+3. Place the extracted files in the data/ directory of this project. If the data/ folder does not exist, create it.
+
 ## **Visualizations and Analyses:**
 The following visualizations will be used to understand the dataset:
 

@@ -24,3 +24,6 @@ Thumbs.db
 
 # Ignore environment variables file (if any)
 .env
+
+# Ignore data folder where large datasets are stored
+data/

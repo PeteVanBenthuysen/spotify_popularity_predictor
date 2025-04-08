@@ -12,7 +12,7 @@ This project requires the following Python libraries for data analysis, modeling
 ```plaintext
 # Latest stable versions as of April 2025
 pandas==2.2.3
-numpy==2.2.4
+numpy==1.26.4
 scikit-learn==1.6.1
 matplotlib==3.10.1
 seaborn==0.13.2

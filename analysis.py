@@ -106,7 +106,7 @@ Q1 = df['duration_sec'].quantile(0.25)
 Q3 = df['duration_sec'].quantile(0.75)
 IQR = Q3 - Q1
 lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR  # ✅ You were missing this line
+upper_bound = Q3 + 1.5 * IQR 
 
 # Filter using IQR
 df = df[(df['duration_sec'] >= lower_bound) & (df['duration_sec'] <= upper_bound)]

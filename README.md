@@ -10,13 +10,12 @@ Getting a song played on mainstream radio or reaching a large audience on stream
 This project requires the following Python libraries for data analysis, modeling, and visualization:
 
 ```plaintext
-# Latest stable versions as of April 2025
 pandas==2.2.3
 numpy==1.26.4
-scikit-learn==1.6.1
-matplotlib==3.10.1
+scikit-learn==1.3.2     
+matplotlib==3.8.4        
 seaborn==0.13.2
-jupyter==1.1.1
+jupyter==1.0.0     
 ```
 
 ## Dataset

@@ -20,10 +20,10 @@ from sklearn.metrics import (
     roc_auc_score,
     roc_curve
 )
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test_split as tts
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, RandomizedSearchCV, train_test_split as tts
 
 # Preprocessing
-from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTETomek
 from sklearn.preprocessing import StandardScaler
 
 
@@ -54,7 +54,7 @@ after_dedup = df.shape[0]
 
 print(f"\nRemoved {before_dedup - after_dedup} duplicate rows based on track_id.\n")
 
-# Checking output of time_signature
+# Check output of time_signature
 print("Proportion of Each Value in 'time_signature':")
 print(df['time_signature'].value_counts(normalize=True))
 
@@ -65,10 +65,10 @@ df['time_signature'] = df['time_signature'].str.extract('(\d+)').astype(int)
 # Convert duration from milliseconds to seconds for easier interpretation
 df['duration_sec'] = df['duration_ms'] / 1000
 
-# Fixing the genre name
+# Fix the genre name
 df['genre'] = df['genre'].replace("Children’s Music", "Children's Music") 
 
-# Dropping genres that are not relevant for our analysis
+# Drop genres that are not relevant for our analysis
 df = df[~df['genre'].isin(['Comedy', "Children's Music"])]
 
 # Combine "Hip-Hop" and "Rap" into "Hip-Hop_Rap"
@@ -424,14 +424,15 @@ X_test_scaled = scaler.transform(X_test)
 print("Scaled Training Data (first few rows):")
 print(X_train_scaled[:5])
 
-# Create separate SMOTE objects for each model to avoid overwriting
-sm = SMOTE(random_state=42)
+# Create separate SMOTETomek objects for each model to avoid overwriting
 
-# Resample scaled data for Logistic Regression
-X_train_resampled_lr, y_train_resampled_lr = sm.fit_resample(X_train_scaled, y_train)
+# For Logistic Regression (scaled features)
+sm_lr = SMOTETomek(random_state=42)
+X_train_resampled_lr, y_train_resampled_lr = sm_lr.fit_resample(X_train_scaled, y_train)
 
-# Resample unscaled data for Random Forest
-X_train_resampled_rf, y_train_resampled_rf = sm.fit_resample(X_train, y_train)
+# For Random Forest (unscaled features)
+sm_rf = SMOTETomek(random_state=42)
+X_train_resampled_rf, y_train_resampled_rf = sm_rf.fit_resample(X_train, y_train)
 
 print("Before oversampling:", np.bincount(y_train))
 print("After oversampling for Logistic Regression:", np.bincount(y_train_resampled_lr))
@@ -447,7 +448,7 @@ logreg_models = [
         'model': LogisticRegression(solver='liblinear', max_iter=1000, class_weight='balanced'),
         'params': {
             'penalty': ['l1', 'l2'],
-            'C': [0.01, 0.1, 1, 10, 100]
+            'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]
         }
     },
     {
@@ -455,11 +456,11 @@ logreg_models = [
         'params': [
             {
                 'penalty': ['l1', 'l2'],
-                'C': [0.01, 0.1, 1, 10, 100]
+                'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]
             },
             {
                 'penalty': ['elasticnet'],
-                'C': [0.01, 0.1, 1, 10, 100],
+                'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],
                 'l1_ratio': [0.0, 0.5, 1.0]  # Only for elasticnet
             }
         ]
@@ -468,10 +469,13 @@ logreg_models = [
         'model': LogisticRegression(solver='lbfgs', max_iter=1000, class_weight='balanced'),
         'params': {
             'penalty': ['l2'],
-            'C': [0.01, 0.1, 1, 10, 100]
+            'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000]
         }
     }
 ]
+
+# Create a StratifiedKFold object for stratified cross-validation
+stratified_kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
 
 # Loop through each configuration and run GridSearchCV
 best_score = 0
@@ -482,8 +486,8 @@ for config in logreg_models:
     grid = GridSearchCV(
         estimator=config['model'],
         param_grid=config['params'],
-        cv=5,
-        scoring='f1',
+        cv=stratified_kfold, # Stratified K-Fold cross-validation
+        scoring='roc_auc', # Use AUC as scoring metric
         n_jobs=-1,
         verbose=1
     )
@@ -493,7 +497,7 @@ for config in logreg_models:
     print(f"Solver: {config['model'].solver}")
     print("Best Params:", grid.best_params_)
     print("Best CV F1 Score:", grid.best_score_)
-    print("-" * 40)
+   
     
     if grid.best_score_ > best_score:
         best_score = grid.best_score_
@@ -509,22 +513,25 @@ print(best_logreg)
 #Random Forest Model
 # Define the parameter distributions for Random Forest
 param_dist_rf = {
-    'n_estimators': [50, 100, 200],         # Number of trees
-    'max_depth': [None, 5, 10, 20],         # Depth of trees
-    'min_samples_split': [2, 5, 10],        # Min samples to split
+    'n_estimators': [50, 100,],       # Number of trees, removed 200 to try to prevent overfitting
+    'max_depth': [5, 10, 20],         # Depth of trees, removed "None" to try to prevent overfitting
+    'min_samples_split': [2, 5, 10],  # Min samples to split
     'max_features': ['sqrt',] #'log2', None]  # Feature subset at each split
 }
+
+# Initialize StratifiedKFold for cross-validation (10-fold)
+stratified_kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
 
 # Initialize RandomizedSearchCV with Random Forest
 random_rf = RandomizedSearchCV(
     estimator=RandomForestClassifier(random_state=42, class_weight='balanced'),
     param_distributions=param_dist_rf,
-    n_iter=25,                  # Try 25 random combinations
-    cv=5,                       # 5-fold cross-validation
-    scoring='f1',               # F1-score for binary classification
+    n_iter=18,                  # 25 random combinations
+    cv=stratified_kfold,        # Stratified K-Fold cross-validation
+    scoring='roc_auc',          # Use AUC as scoring metric
     n_jobs=-1,                  # Use all available CPU cores
-    verbose=1,                  # Show progress
-    random_state=42             # Reproducibility
+    verbose=1,                  
+    random_state=42            
 )
 
 # Fit the model on the training data (no scaling needed for Random Forest)
@@ -539,6 +546,7 @@ best_rf = random_rf.best_estimator_
 
 print("Best Random Forest Model (Key Parameters):")
 print(best_rf)
+
 ### 6.5) Evaluating Tuned Models on the Validation Set ###
 
 # Making predictions on the validation set
@@ -558,7 +566,6 @@ def plot_threshold_metrics(thresholds, f1_scores, precisions, recalls, accuracie
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-
 
 # Random Forest: Threshold Tuning
 
@@ -696,6 +703,7 @@ print(f"Sensitivity (Recall): {recall_rf:.4f}")
 print(f"Specificity: {specificity_rf:.4f}")
 print(f"Precision: {precision_rf:.4f}")
 print(f"F1 Score: {f1_rf:.4f}")
+print(f"AUC: {roc_auc_score(y_test, y_prob_rf):.4f}")
 
 # Plot confusion matrix
 plot_conf_matrix(

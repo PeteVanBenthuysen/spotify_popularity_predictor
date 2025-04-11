@@ -26,7 +26,6 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold, RandomizedSea
 from imblearn.combine import SMOTETomek
 from sklearn.preprocessing import StandardScaler
 
-
 ### 1) Loading, cleaning, and preprocessing the dataset ###
 
 # Load dataset
@@ -87,8 +86,6 @@ df['is_popular'] = (df['popularity'] >= threshold).astype(int)
 print(f"Using popularity threshold: {threshold:.2f}")
 print("Class Distribution for 'is_popular' (Proportions):")
 print(df['is_popular'].value_counts(normalize=True)) # Check class distribution
-
-
 
 df = df.drop(columns=['popularity'])
 df = df.drop_duplicates()
@@ -290,12 +287,12 @@ train_val_df, test_df = tts(
     df, test_size=0.2, stratify=df['is_popular'], random_state=42
 )
 
-# Second split: 75% train, 25% val from train_val
+# Second split: 75% train, 25% val from train_val → ends up as 60/20/20
 train_df, val_df = tts(
     train_val_df, test_size=0.25, stratify=train_val_df['is_popular'], random_state=42
 )
 
-# Define feature columns (drop the target)
+# Extract feature columns (drop the target column)
 feature_cols = train_df.select_dtypes(include='number').columns.drop('is_popular')
 
 # X and y for training set
@@ -310,9 +307,10 @@ y_val = val_df['is_popular']
 X_test = test_df[feature_cols]
 y_test = test_df['is_popular']
 
-print("Train size:", X_train.shape)
-print("Validation size:", X_val.shape)
-print("Test size:", X_test.shape)
+# Output split sizes
+print("Train set size:", X_train.shape)
+print("Validation set size:", X_val.shape)
+print("Test set size:", X_test.shape)
 
 ### 3.5) Baseline Model With Linear Regression ###
 
@@ -401,9 +399,11 @@ y_val = val_df['is_popular']
 X_test = test_df[feature_cols]
 y_test = test_df['is_popular']
 
+# Output summary
 print("Train size:", X_train.shape)
 print("Validation size:", X_val.shape)
 print("Test size:", X_test.shape)
+print("Training class distribution:", y_train.value_counts().to_dict())
 
 ### 5) Rescaling Training Data ###
 

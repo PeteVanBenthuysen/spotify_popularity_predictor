@@ -1,10 +1,16 @@
 # Ignore virtual environment folders
 envs/
 venv/
+.venv/
 
 # Ignore Python bytecode files
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
 
 # Ignore IDE/editor specific files
 .vscode/
@@ -15,15 +21,34 @@ __pycache__/
 
 # Ignore Windows system files
 Thumbs.db
+ehthumbs.db
+desktop.ini
 
 # Ignore log files
 *.log
 
-# Ignore Jupyter notebook checkpoints
-.ipynb_checkpoints/
-
-# Ignore environment variables file (if any)
+# Ignore environment variables or secret config files
 .env
+.env.*
 
-# Ignore data folder where large datasets are stored
+# Ignore build artifacts (for Python packages)
+build/
+dist/
+*.egg-info/
+
+# Ignore saved models, large pickles, and checkpoints
+*.pkl
+*.joblib
+*.h5
+checkpoints/
+
+# Ignore large datasets and CSV exports
 data/
+*.csv
+*.tsv
+*.zip
+
+# Ignore output files or cache
+*.out
+*.tmp
+.cache/

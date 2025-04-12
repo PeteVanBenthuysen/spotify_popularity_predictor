@@ -1,10 +1,10 @@
 # **Spotify Song Popularity Prediction**
 
 ## **Goal**
-The goal of this project is to **predict whether a song is popular** on Spotify, with popularity defined as a score greater than or equal to **59**. By understanding the factors that influence a song’s popularity, we aim to identify what variables cause a song to go mainstream, making this a valuable tool for artists, producers, and marketers who wish to optimize song appeal.
+The goal of this project is to predict whether a song is popular on Spotify, with popularity defined as a score greater than or equal to 59. By understanding the factors that influence a song’s popularity, we aim to identify what variables cause a song to go mainstream, making this a valuable tool for artists, producers, and marketers who wish to optimize song appeal.
 
 ## **Why This Goal?**
-Getting a song played on mainstream radio or reaching a large audience on streaming platforms is **not an easy task**. There are numerous factors—such as tempo, danceability, energy, and other audio features—that contribute to a song's success. By analyzing these features, we aim to build a model that can predict whether a song is likely to become popular, based on its characteristics.
+Getting a song played on mainstream radio or reaching a large audience on streaming platforms is not an easy task. There are numerous factors—such as tempo, danceability, energy, and other audio features—that contribute to a song's success. By analyzing these features, we aim to build a model that can predict whether a song is likely to become popular, based on its characteristics.
 
 ## **Project Requirements**
 This project requires the following Python libraries for data analysis, modeling, and visualization:
@@ -19,9 +19,9 @@ jupyter==1.0.0
 imbalanced-learn==0.11.0   
 ```
 
-## Dataset
+## **Dataset**
 
-The dataset used in this project is the **Ultimate Spotify Tracks DB** from Kaggle.
+The dataset used in this project is the Ultimate Spotify Tracks DB from Kaggle.
 
 To get started, follow these steps:
 
@@ -46,10 +46,10 @@ We began by loading and preprocessing the raw Spotify dataset to ensure that it 
 
 #### Duplicate Tracks
 - Identified and analyzed tracks with duplicate `track_id` values.
-- **Found 35,124 duplicated track_ids** with conflicting genres.
-- This affected **a total of 91,075 rows**.
-- Removed duplicates by keeping only the **first occurrence** of each `track_id`.
-- **Removed 55,951 rows** during deduplication.
+- Found 35,124 duplicated track_ids with conflicting genres.
+- This affected a total of 91,075 rows.
+- Removed duplicates by keeping only the first occurrence of each `track_id`.
+- Removed 55,951 rows during deduplication.
 
 #### Time Signature Cleanup
 - Removed invalid values (`'0/4'`) from the `time_signature` column.
@@ -60,7 +60,7 @@ We began by loading and preprocessing the raw Spotify dataset to ensure that it 
 
 #### Genre Cleanup
 - Replaced invalid genre names (e.g., fixing encoding issues with "Children’s Music").
-- Dropped irrelevant genres like **Comedy** and **Children's Music**.
+- Dropped irrelevant genres like Comedy and Children's Music.
 - Merged `"Hip-Hop"` and `"Rap"` into a combined `"Hip-Hop_Rap"` category.
 
 #### Column Removal
@@ -75,8 +75,8 @@ We began by loading and preprocessing the raw Spotify dataset to ensure that it 
 ### Target Variable Creation
 
 We defined a binary target variable `is_popular`:
-- Songs in the **top 10% of popularity** (≥ 59.0) were labeled as **1 (popular)**.
-- All other songs were labeled as **0 (not popular)**.
+- Songs in the top 10% of popularity (≥ 59.0) were labeled as 1 (popular).
+- All other songs were labeled as 0 (not popular).
 - Dropped the original `popularity` column afterward.
 
 ---
@@ -90,7 +90,7 @@ We defined a binary target variable `is_popular`:
 ---
 
 ### Final Cleaned Dataset:
-- **Shape**: `(159,981 rows × 15 columns)`
+- Shape: `(159,981 rows × 15 columns)`
 - Fully prepared for EDA, feature engineering, and model training.
 
 
@@ -104,7 +104,7 @@ To better understand the dataset and prepare for modeling, we conducted extensiv
 
 ### 2. Duration Outlier Detection and Removal
 - Plotted a histogram of song durations (in seconds) before outlier removal.
-- Used the **IQR method** to identify and remove extreme duration values.
+- Used the IQR method to identify and remove extreme duration values.
 - Replotted the cleaned distribution and reported:
   - Number of outliers detected and removed
   - IQR range used for filtering
@@ -112,14 +112,14 @@ To better understand the dataset and prepare for modeling, we conducted extensiv
   - Final dataset size after cleaning
 
 ### 3. Tempo Distribution
-- Plotted a histogram of **tempo (BPM)** making sure outliers were not present.
+- Plotted a histogram of tempo (BPM) making sure outliers were not present.
 
 ### 4. Energy vs. Popularity (Violin Plot)
-- Created a violin plot comparing **energy distribution** between popular and non-popular songs (`is_popular` = 1 vs 0).
+- Created a violin plot comparing energy distribution between popular and non-popular songs (`is_popular` = 1 vs 0).
 - Calculated and printed the IQR for `energy` within each popularity group.
 
 ### 5. Feature Interactions: Scatter Plots
-- **Danceability vs. Loudness**:
+- Danceability vs. Loudness:
   - Created a scatter plot with correlation coefficient.
   - Included summary statistics for both variables.
 - **Loudness vs. Energy**:
@@ -138,7 +138,7 @@ To better understand the dataset and prepare for modeling, we conducted extensiv
 
 ### Note on Outlier Removal
 
-Outlier removal was **only applied to the `duration_sec` feature**.
+Outlier removal was only applied to the `duration_sec` feature.
 
 This decision was intentional because:
 - Many audio features (e.g., energy, danceability, valence, loudness) naturally vary across music genres and styles.
@@ -194,13 +194,13 @@ We engineered new features and transformed existing ones to make the data more s
 To properly evaluate model performance and avoid overfitting, the dataset was split into three parts:
 
 ### 1. 80/20 Initial Split
-- **80%** of the data was used for training and validation (`train_val`).
-- **20%** was set aside as a holdout **test set**, never seen during model training or tuning.
+- 80% of the data was used for training and validation (`train_val`).
+- 20% was set aside as a holdout test set, never seen during model training or tuning.
 
 ### 2. Secondary Split (Train vs. Validation)
 - From the `train_val` set, a second split was made:
-  - **75% for training**, **25% for validation**.
-  - This results in a final 60/20/20 split between **train**, **validation**, and **test** sets.
+  - 75% for training, 25% for validation.
+  - This results in a final 60/20/20 split between train, validation, and test sets.
 
 ### 3. Stratified Sampling
 - All splits used **stratification on the `is_popular` column** to ensure balanced class proportions across train, validation, and test sets.
@@ -215,31 +215,31 @@ To properly evaluate model performance and avoid overfitting, the dataset was sp
 
 ## **Feature Scaling & Class Balancing**
 
-To ensure fair model performance and handle class imbalance, we performed both **feature scaling** and **resampling**:
+To ensure fair model performance and handle class imbalance, we performed both feature scaling and resampling:
 
 ### 1. Standardization (Scaling)
 - Applied `StandardScaler` from `scikit-learn` to standardize the input features:
-  - Fit only on the **training set** (`X_train`) to avoid data leakage.
-  - Transformed **training**, **validation**, and **test** sets using the same scaler.
-- This step is essential for models like **Logistic Regression**, which are sensitive to feature magnitudes.
+  - Fit only on the training set (`X_train`) to avoid data leakage.
+  - Transformed training, validation, and test sets using the same scaler.
+- This step is essential for models like Logistic Regression, which are sensitive to feature magnitudes.
 
 ### 2. Class Imbalance Handling with SMOTETomek
 
-We observed that only ~10% of the songs were labeled as "popular", leading to **class imbalance**. To address this, we used:
+We observed that only ~10% of the songs were labeled as "popular", leading to class imbalance. To address this, we used:
 
 **SMOTETomek**, which combines:
-- **SMOTE (Synthetic Minority Over-sampling Technique)**: Adds synthetic samples to the minority class (popular songs) to balance the class distribution.
-- **Tomek Links**: Removes ambiguous samples from the majority class that are close to the decision boundary.
+- SMOTE (Synthetic Minority Over-sampling Technique): Adds synthetic samples to the minority class (popular songs) to balance the class distribution.
+- Tomek Links: Removes ambiguous samples from the majority class that are close to the decision boundary.
 
 This combined approach:
-- **Increases minority representation** (helps recall).
-- **Cleans borderline/noisy majority class samples** (improves precision).
-- Helps models **learn a more generalizable decision boundary** rather than overfitting to imbalance.
+- Increases minority representation (helps recall).
+- Cleans borderline/noisy majority class samples (improves precision).
+- Helps models learn a more generalizable decision boundary rather than overfitting to imbalance.
 
 ### 3. Dual Resampling Strategy
-- Created **two** versions of the training set:
-  - **Logistic Regression**: Resampled using **scaled features** (`X_train_scaled`).
-  - **Random Forest**: Resampled using **unscaled features** (`X_train`), since tree-based models don’t require scaling.
+- Created two versions of the training set:
+  - Logistic Regression: Resampled using scaled features (`X_train_scaled`).
+  - Random Forest: Resampled using unscaled features (`X_train`), since tree-based models don’t require scaling.
 - Both models were then trained on their respective resampled datasets.
 - Printed class counts before and after to verify balance.
 
@@ -250,7 +250,7 @@ This step ensures that:
 
 ## **Train & Tune Candidate Models**
 
-We trained and optimized two classification models: **Logistic Regression** and **Random Forest**, using stratified cross-validation and class balancing. Our objective was to maximize **ROC AUC**, a robust metric for binary classification.
+We trained and optimized two classification models: Logistic Regression and Random Forest, using stratified cross-validation and class balancing. Our objective was to maximize ROC AUC, a robust metric for binary classification.
 
 ---
 
@@ -263,23 +263,23 @@ We trained multiple versions of Logistic Regression using:
 
 **Why Stratified K-Fold Cross-Validation?**
 - Our target variable (`is_popular`) is imbalanced (only ~10% of songs are popular).
-- **Stratified K-Fold** ensures each fold maintains the same proportion of popular vs. non-popular songs.
+- Stratified K-Fold ensures each fold maintains the same proportion of popular vs. non-popular songs.
 - This prevents misleading validation results that could arise from uneven class distributions during cross-validation.
 
 **Why ROC AUC?**
 - Accuracy can be misleading with imbalanced classes — it may appear high even if the model fails to detect minority-class examples.
-- **ROC AUC (Receiver Operating Characteristic - Area Under Curve)** measures the model’s ability to distinguish between classes across all classification thresholds.
+- ROC AUC (Receiver Operating Characteristic - Area Under Curve) measures the model’s ability to distinguish between classes across all classification thresholds.
 - It's threshold-independent and highlights how well the model ranks true positives higher than false positives.
 
-**Search Strategy:**
+Search Strategy:
 - Used `GridSearchCV` with 10-fold Stratified K-Fold
 - Evaluated models using ROC AUC
-- Trained on the **scaled, resampled training set** (`X_train_resampled_lr`)
+- Trained on the scaled, resampled training set (`X_train_resampled_lr`)
 
-**Results:**
+Results:
 - Best Solver: `liblinear`
 - Best Parameters: `penalty='l1'`, `C=0.1`
-- Best Cross-Validation AUC: **~0.80**
+- Best Cross-Validation AUC: ~0.80
 
 ---
 
@@ -291,11 +291,11 @@ We tuned a Random Forest using `RandomizedSearchCV` across:
 - `min_samples_split`: `[2, 5, 10]`
 - `max_features`: `['sqrt']`
 
-**Search Strategy:**
+Search Strategy:
 - Used `RandomizedSearchCV` with 18 random combinations
-- Applied 10-fold **Stratified K-Fold** cross-validation
-- Scored using **ROC AUC**
-- Trained on the **unscaled, resampled training set** (`X_train_resampled_rf`), since scaling is not required for tree-based models
+- Applied 10-fold Stratified K-Fold cross-validation
+- Scored using ROC AUC
+- Trained on the unscaled, resampled training set (`X_train_resampled_rf`), since scaling is not required for tree-based models
 
 **Results:**
 - Best Parameters:
@@ -303,7 +303,7 @@ We tuned a Random Forest using `RandomizedSearchCV` across:
   - `max_depth=10`
   - `min_samples_split=5`
   - `max_features='sqrt'`
-- Best Cross-Validation AUC: **~0.89**
+- Best Cross-Validation AUC: ~0.89
 
 - This Random Forest model outperformed Logistic Regression in ROC AUC and was selected as our primary model for threshold tuning and final test evaluation.
 
@@ -361,21 +361,21 @@ This tuning ensured that we were evaluating each model fairly and optimally, rat
 
 ## **Final Model Evaluation on Test Set**
 
-After tuning and validating our Random Forest model using threshold optimization on the validation set, we evaluated its performance on the **unseen test set** to measure how well the model generalizes.
+After tuning and validating our Random Forest model using threshold optimization on the validation set, we evaluated its performance on the unseen test set to measure how well the model generalizes.
 
 ---
 
 ### What We Did
 
-1. **Applied the optimized threshold** (0.55) to the predicted probabilities generated by the Random Forest model.
-2. **Computed key classification metrics** including:
+1. Applied the optimized threshold (0.55) to the predicted probabilities generated by the Random Forest model.
+2. Computed key classification metrics including:
    - Accuracy
    - Precision
    - Recall (Sensitivity)
    - Specificity
    - F1 Score
    - ROC AUC
-3. **Visualized results** using:
+3. Visualized results using:
    - A confusion matrix to show classification breakdown
    - An ROC curve to evaluate performance across all thresholds
 
@@ -405,7 +405,7 @@ After tuning and validating our Random Forest model using threshold optimization
 
 ### Summary
 
-The Random Forest model achieved **strong generalization performance** on the test set. It balanced **recall and precision** well given the class imbalance and showed **excellent ranking ability** with an AUC of 0.8857.
+The Random Forest model achieved strong generalization performance on the test set. It balanced recall and precision well given the class imbalance and showed excellent ranking ability with an AUC of 0.8857.
 
 This performance confirms that the model is suitable for real-world use cases such as:
 - Filtering likely breakout songs

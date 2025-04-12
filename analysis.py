@@ -74,7 +74,7 @@ df = df[~df['genre'].isin(['Comedy', "Children's Music"])]
 df['genre'] = df['genre'].replace({'Hip-Hop': 'Hip-Hop_Rap', 'Rap': 'Hip-Hop_Rap'})
 
 # Check the updated genre distribution
-print("Count of Each Genre in the Dataset:")
+print("\nCount of Each Genre in the Dataset:")
 print(df['genre'].value_counts())
 
 # Drop columns we don't want the model to use
@@ -83,7 +83,7 @@ df = df.drop(columns=['track_name', 'track_id', 'artist_name', 'duration_ms'])
 # Statistically define threshold for popularity based on top 10%
 threshold = df['popularity'].quantile(0.90) # Top 10%
 df['is_popular'] = (df['popularity'] >= threshold).astype(int)
-print(f"Using popularity threshold: {threshold:.2f}")
+print(f"\nUsing popularity threshold: {threshold:.2f}") #59.0
 print("Class Distribution for 'is_popular' (Proportions):")
 print(df['is_popular'].value_counts(normalize=True)) # Check class distribution
 
@@ -110,7 +110,11 @@ if num_duplicates > 0:
 else:
     print("No exact duplicate rows found.")
 
-print(f"Cleaned dataset shape: {df.shape}")
+# Dataset shape after cleaning
+print(f"\nCleaned dataset shape: {df.shape}")
+
+# List of columns after cleaning
+print(f"\nColumns after cleaning: {df.columns.tolist()}")
 
 ### 1.5) EDA Checks ###
 
@@ -139,33 +143,54 @@ plt.gca().invert_yaxis()
 plt.tight_layout()
 plt.show()
 
-# Save original count before filtering
-original_count = df.shape[0]
+### IQR Analysis for Duration ###
 
-# IQR calculation
+# Bar chart before outlier removal
+plt.figure(figsize=(10, 6))
+plt.hist(df['duration_sec'], bins=100, edgecolor='black')
+plt.xlabel('Duration (seconds)')
+plt.ylabel('Frequency')
+plt.title('Distribution of Song Duration (Before Outlier Removal)')
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
+
+# IQR Calculation for duration
 Q1 = df['duration_sec'].quantile(0.25)
 Q3 = df['duration_sec'].quantile(0.75)
 IQR = Q3 - Q1
+
 lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR 
+upper_bound = Q3 + 1.5 * IQR
 
-# Filter using IQR
+# Count outliers
+total_before = df.shape[0]
+outliers_detected = ((df['duration_sec'] < lower_bound) | (df['duration_sec'] > upper_bound)).sum()
+
+# Remove outliers
 df = df[(df['duration_sec'] >= lower_bound) & (df['duration_sec'] <= upper_bound)]
+total_after = df.shape[0]
+songs_removed = total_before - total_after
 
-# Count after filtering
-filtered_count = df.shape[0]
+# Print IQR stats and impact
+print("\nDuration IQR Analysis")
+print(f"Outliers detected: {outliers_detected}")
+print(f"Songs removed from dataset: {songs_removed}")
+print(f"IQR Range: {lower_bound:.0f} to {upper_bound:.0f} seconds")
+print(f"Original duration range: {df['duration_sec'].min():.3f} to {df['duration_sec'].max():.3f} seconds")
+print(f"Remaining dataset size: {total_after:,} songs")
 
-# Show how many rows were removed
-removed_count = original_count - filtered_count
-print(f"Removed {removed_count} songs due to length outliers using IQR filtering.")
-print(f"IQR Range: {lower_bound:.0f} to {upper_bound:.0f}")
-print(f"Duration range after filtering: {df['duration_sec'].min():.3f} to {df['duration_sec'].max():.3f}")
-
-# Plot boxplot of song tempo by genre
-sns.boxplot(x='genre', y='tempo', data=df)
-plt.title('Tempo Distribution by Genre')
-plt.xticks(rotation=45)
+# Bar chart after duration outlier removal
+plt.figure(figsize=(10, 6))
+plt.hist(df['duration_sec'], bins=100, color='skyblue', edgecolor='black')
+plt.xlabel('Duration (seconds)')
+plt.ylabel('Frequency')
+plt.title('Distribution of Song Duration (After IQR Outlier Removal)')
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
 plt.show()
+
+### IQR Analysis for Tempo ###
 
 # Plot histogram of song tempo
 plt.figure(figsize=(10, 6))
@@ -173,32 +198,11 @@ plt.hist(df['tempo'], bins=100, edgecolor='black')
 plt.xlabel('Tempo (BPM)')
 plt.ylabel('Frequency')
 plt.title('Distribution of Song Tempo')
-plt.xlim(0, 250)  # Focus on songs between 0 and 250 BPM (common tempo range)
+plt.xlim(0, 250)
 plt.grid(True, linestyle='--', alpha=0.5)
 plt.tight_layout()
 plt.show()
 
-# Save original count before filtering
-original_count = df.shape[0]
-
-# IQR calculation for tempo
-Q1 = df['tempo'].quantile(0.25)
-Q3 = df['tempo'].quantile(0.75)
-IQR = Q3 - Q1
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR 
-
-# Filter using IQR for tempo
-df = df[(df['tempo'] >= lower_bound) & (df['tempo'] <= upper_bound)]
-
-# Count after filtering
-filtered_count = df.shape[0]
-
-# Show how many rows were removed
-removed_count = original_count - filtered_count
-print(f"Removed {removed_count} songs due to tempo outliers using IQR filtering.")
-print(f"IQR Range: {lower_bound:.0f} to {upper_bound:.0f}")
-print(f"Tempo range after filtering: {df['tempo'].min():.3f} to {df['tempo'].max():.3f}")
 
 # Violin plot for is_popular vs energy
 sns.violinplot(x='is_popular', y='energy', data=df)
@@ -280,58 +284,19 @@ plt.show()
 # Data point check
 print(f"After EDA and cleaning, the final dataset contains {df.shape[0]:,} songs.")
 
-### 3) Training/Testing Dataset Using Train/Validation/Test For Baseline Model ###
+# Column check after EDA
+print(f"\nColumns after EDA: {df.columns.tolist()}")
 
-# First split: 80% train_val, 20% test
-train_val_df, test_df = tts(
-    df, test_size=0.2, stratify=df['is_popular'], random_state=42
-)
-
-# Second split: 75% train, 25% val from train_val → ends up as 60/20/20
-train_df, val_df = tts(
-    train_val_df, test_size=0.25, stratify=train_val_df['is_popular'], random_state=42
-)
-
-# Extract feature columns (drop the target column)
-feature_cols = train_df.select_dtypes(include='number').columns.drop('is_popular')
-
-# X and y for training set
-X_train = train_df[feature_cols]
-y_train = train_df['is_popular']
-
-# Validation set
-X_val = val_df[feature_cols]
-y_val = val_df['is_popular']
-
-# Test set
-X_test = test_df[feature_cols]
-y_test = test_df['is_popular']
-
-# Output split sizes
-print("Train set size:", X_train.shape)
-print("Validation set size:", X_val.shape)
-print("Test set size:", X_test.shape)
-
-### 3.5) Baseline Model With Linear Regression ###
-
-# Initialize and train model
-linreg = LinearRegression()
-linreg.fit(X_train, y_train)
-
-# Predict on validation set
-y_val_pred = linreg.predict(X_val)
-
-# Evaluate model performance
-print("Linear Regression - R² Score:", r2_score(y_val, y_val_pred))
-print("Linear Regression - MSE:", mean_squared_error(y_val, y_val_pred))
-
-### 4) Feature Engineering ###
+### 3) Feature Engineering ###
 
 # Convert mode from string to binary: Major = 1, Minor = 0
 df['mode'] = df['mode'].map({'Minor': 0, 'Major': 1})
 
-# One-hot encode categorical variables
+# One-hot encode genre variables
 df = pd.get_dummies(df, columns=['genre', 'key'])
+
+# One-hot encode time_signature variables
+df = pd.get_dummies(df, columns=['time_signature'], prefix='ts')
 
 # Create a new feature for vocalness as the inverse of instrumentalness (more vocals = less instrumental)
 df['vocalness'] = 1 - df['instrumentalness']
@@ -364,46 +329,57 @@ df.drop(columns=['instrumentalness'], inplace=True)
 df.drop(columns=['tempo'], inplace=True)
 
 # Data checkpoint after feature engineering
-print("Checking for missing values in the dataset...") # Check for missing values in each column
+print("\nChecking for missing values in the dataset after feature engineering...") # Check for missing values in each column
 missing_values = df.isnull().sum()
 print("Missing values by column:")
 print(missing_values) 
-print("Checking for duplicate rows in the dataset...") # Check for duplicate rows
+print("\nChecking for duplicate rows in the dataset...")
 duplicates = df.duplicated().sum()
-print(f"After feature engineering, the dataset contains {df.shape[0]:,} songs.")
 
-### 4.5) Setting Up New Train/Validation/Test Sets After Feature Engineering ###
+if duplicates > 0:
+    print(f"Found {duplicates} duplicate rows.")
+else:
+    print("No duplicate rows found.")
+
+print(f"\nAfter feature engineering, the dataset contains {df.shape[0]:,} songs.")
+
+# Column check after feature engineering
+print(f"\nColumns after feature engineering: {df.columns.tolist()}")
+
+### 4) Training/Testing Dataset Using Train/Validation/Test Splits ###
 
 # First split: 80% train_val, 20% test
 train_val_df, test_df = tts(
     df, test_size=0.2, stratify=df['is_popular'], random_state=42
 )
 
-# Second split: 75% train, 25% val from train_val
+# Second split: 75% train, 25% val from train_val → ends up as 60/20/20
 train_df, val_df = tts(
     train_val_df, test_size=0.25, stratify=train_val_df['is_popular'], random_state=42
 )
 
-# Define feature columns (drop the target)
-feature_cols = train_df.select_dtypes(include='number').columns.drop('is_popular')
+# Define feature columns after splitting from the original df
+feature_cols = df.columns[df.columns != 'is_popular']
 
-# X and y for training set
-X_train = train_df[feature_cols]
+# Use reindex to align columns for each split
+X_train = train_df.reindex(columns=feature_cols, fill_value=0)
 y_train = train_df['is_popular']
 
-# Validation set
-X_val = val_df[feature_cols]
+X_val = val_df.reindex(columns=feature_cols, fill_value=0)
 y_val = val_df['is_popular']
 
-# Test set
-X_test = test_df[feature_cols]
+X_test = test_df.reindex(columns=feature_cols, fill_value=0)
 y_test = test_df['is_popular']
 
-# Output summary
-print("Train size:", X_train.shape)
+# Output clean summary
+print("\nTrain size:", X_train.shape)
 print("Validation size:", X_val.shape)
 print("Test size:", X_test.shape)
 print("Training class distribution:", y_train.value_counts().to_dict())
+
+# Column check after splitting
+print(f"\nColumns after splitting: {X_train.columns.tolist()}")
+
 
 ### 5) Rescaling Training Data ###
 
@@ -421,7 +397,7 @@ X_val_scaled = scaler.transform(X_val)
 X_test_scaled = scaler.transform(X_test)
 
 # Print the first few rows of the scaled data to ensure it looks correct
-print("Scaled Training Data (first few rows):")
+print("\nScaled Training Data (first few rows):")
 print(X_train_scaled[:5])
 
 # Create separate SMOTETomek objects for each model to avoid overwriting
@@ -434,7 +410,7 @@ X_train_resampled_lr, y_train_resampled_lr = sm_lr.fit_resample(X_train_scaled, 
 sm_rf = SMOTETomek(random_state=42)
 X_train_resampled_rf, y_train_resampled_rf = sm_rf.fit_resample(X_train, y_train)
 
-print("Before oversampling:", np.bincount(y_train))
+print("\nBefore oversampling:", np.bincount(y_train))
 print("After oversampling for Logistic Regression:", np.bincount(y_train_resampled_lr))
 print("After oversampling for Random Forest:", np.bincount(y_train_resampled_rf))
 
@@ -494,9 +470,9 @@ for config in logreg_models:
     
     grid.fit(X_train_resampled_lr, y_train_resampled_lr)
     
-    print(f"Solver: {config['model'].solver}")
-    print("Best Params:", grid.best_params_)
-    print("Best CV F1 Score:", grid.best_score_)
+    print(f"\nSolver: {config['model'].solver}")
+    print("Best Parameters for Logistic Regression:", grid.best_params_)
+    print("Best cross-validation ROC AUC score for Logistic Regression:", grid.best_score_)
    
     
     if grid.best_score_ > best_score:
@@ -507,7 +483,7 @@ for config in logreg_models:
 # Save the best performing model
 best_logreg = best_model
 
-print("Best Logistic Regression Model (Key Parameters):")
+print("\nBest Logistic Regression Model (Key Parameters):")
 print(best_logreg)
 
 #Random Forest Model
@@ -516,7 +492,7 @@ param_dist_rf = {
     'n_estimators': [50, 100,],       # Number of trees, removed 200 to try to prevent overfitting
     'max_depth': [5, 10, 20],         # Depth of trees, removed "None" to try to prevent overfitting
     'min_samples_split': [2, 5, 10],  # Min samples to split
-    'max_features': ['sqrt',] #'log2', None]  # Feature subset at each split
+    'max_features': ['sqrt',] #'log2', None]  # Feature subset at each split, coded out None and log2 to save computational
 }
 
 # Initialize StratifiedKFold for cross-validation (10-fold)
@@ -538,13 +514,13 @@ random_rf = RandomizedSearchCV(
 random_rf.fit(X_train_resampled_rf, y_train_resampled_rf)
 
 # Output the best hyperparameters and best cross-validation score
-print("Best parameters for Random Forest:", random_rf.best_params_)
-print("Best cross-validation F1 score for Random Forest:", random_rf.best_score_)
+print("\nBest parameters for Random Forest:", random_rf.best_params_)
+print("\nBest cross-validation ROC AUC score for Random Forest:", random_rf.best_score_)
 
 # Save the best model for future use
 best_rf = random_rf.best_estimator_
 
-print("Best Random Forest Model (Key Parameters):")
+print("\nBest Random Forest Model (Key Parameters):")
 print(best_rf)
 
 ### 6.5) Evaluating Tuned Models on the Validation Set ###

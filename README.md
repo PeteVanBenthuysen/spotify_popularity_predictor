@@ -29,6 +29,70 @@ To get started, follow these steps:
 2. Download the dataset and unzip it.
 3. Place the extracted files in the data/ directory of this project. If the data/ folder does not exist, create it.
 
+## **Loading, Cleaning, and Preprocessing the Dataset**
+
+We began by loading and preprocessing the raw Spotify dataset to ensure that it was clean, consistent, and ready for modeling.
+
+---
+
+### Data Loading
+- Loaded the `SpotifyFeatures.csv` dataset from the `data/` directory.
+- Disabled date parsing to avoid misinterpreting string columns like `time_signature`.
+
+---
+
+### Cleaning and Deduplication
+
+#### Duplicate Tracks
+- Identified and analyzed tracks with duplicate `track_id` values.
+- **Found 35,124 duplicated track_ids** with conflicting genres.
+- This affected **a total of 91,075 rows**.
+- Removed duplicates by keeping only the **first occurrence** of each `track_id`.
+- **Removed 55,951 rows** during deduplication.
+
+#### Time Signature Cleanup
+- Removed invalid values (`'0/4'`) from the `time_signature` column.
+- Extracted the numeric part and converted it to integer format.
+
+#### Duration Fix
+- Converted song duration from milliseconds to seconds, creating a new column: `duration_sec`.
+
+#### Genre Cleanup
+- Replaced invalid genre names (e.g., fixing encoding issues with "Children’s Music").
+- Dropped irrelevant genres like **Comedy** and **Children's Music**.
+- Merged `"Hip-Hop"` and `"Rap"` into a combined `"Hip-Hop_Rap"` category.
+
+#### Column Removal
+- Dropped unnecessary columns such as:
+  - `track_name`
+  - `track_id`
+  - `artist_name`
+  - `duration_ms`
+
+---
+
+### Target Variable Creation
+
+We defined a binary target variable `is_popular`:
+- Songs in the **top 10% of popularity** (≥ 59.0) were labeled as **1 (popular)**.
+- All other songs were labeled as **0 (not popular)**.
+- Dropped the original `popularity` column afterward.
+
+---
+
+### Final Checks
+
+- Removed any remaining duplicate rows.
+- Verified column data types and structure.
+- Confirmed no missing values or nulls in the cleaned dataset.
+
+---
+
+### Final Cleaned Dataset:
+- **Shape**: `(159,981 rows × 15 columns)`
+- Fully prepared for EDA, feature engineering, and model training.
+
+
 ## **Exploratory Data Analysis (EDA):**
 To better understand the dataset and prepare for modeling, we conducted extensive exploratory data analysis:
 

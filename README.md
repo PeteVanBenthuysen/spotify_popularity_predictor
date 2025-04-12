@@ -55,7 +55,7 @@ We began by loading and preprocessing the raw Spotify dataset to ensure that it 
 - Extracted the numeric part and converted it to integer format.
 
 #### Duration Fix
-- Converted song duration from milliseconds to seconds, creating a new column: `duration_sec`.
+- Converted song duration from milliseconds to seconds, creating a new column: `duration_sec` and dropped `duration_ms`.
 
 #### Genre Cleanup
 - Replaced invalid genre names (e.g., fixing encoding issues with "Children’s Music").
@@ -111,7 +111,7 @@ To better understand the dataset and prepare for modeling, we conducted extensiv
   - Final dataset size after cleaning
 
 ### 3. Tempo Distribution
-- Plotted a histogram of **tempo (BPM)** with x-axis limited to 0–250 BPM for better visualization of realistic values.
+- Plotted a histogram of **tempo (BPM)** making sure outliers were not present.
 
 ### 4. Energy vs. Popularity (Violin Plot)
 - Created a violin plot comparing **energy distribution** between popular and non-popular songs (`is_popular` = 1 vs 0).
@@ -132,6 +132,19 @@ To better understand the dataset and prepare for modeling, we conducted extensiv
 ### 7. Summary Checks
 - Printed final dataset shape and column names after EDA.
 - Reviewed value distributions and confirmed readiness for feature engineering.
+
+---
+
+### Note on Outlier Removal
+
+Outlier removal was **only applied to the `duration_sec` feature**.
+
+This decision was intentional because:
+- Many audio features (e.g., energy, danceability, valence, loudness) naturally vary across music genres and styles.
+- What may appear as an outlier in one genre (e.g., extremely low energy in Ambient or Classical music) could be typical in that context.
+- Removing those values could have biased the model against certain genres or artistic styles.
+
+In contrast, song duration exhibited extreme values (very short or overly long tracks) that were likely to be metadata errors, movies, audiobooks or non-standard releases. Removing those improved data consistency without harming genre diversity.
 
 ## **Feature Engineering:**
 

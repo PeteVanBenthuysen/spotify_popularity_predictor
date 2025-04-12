@@ -28,6 +28,7 @@ To get started, follow these steps:
 1. Go to the [Kaggle dataset page](https://www.kaggle.com/zaheenhamidani/ultimate-spotify-tracks-db).
 2. Download the dataset and unzip it.
 3. Place the extracted files in the data/ directory of this project. If the data/ folder does not exist, create it.
+4. For more information on what these datapoints mean, you can check out the description [Here](https://developer.spotify.com/documentation/web-api/reference/get-audio-features)
 
 ## **Loading, Cleaning, and Preprocessing the Dataset**
 

@@ -12,11 +12,9 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     f1_score,
-    mean_squared_error,
     precision_recall_fscore_support,
     precision_score,
     recall_score,
-    r2_score,
     roc_auc_score,
     roc_curve
 )
@@ -145,7 +143,7 @@ plt.show()
 
 ### IQR Analysis for Duration ###
 
-# Bar chart before outlier removal
+# Histogram before outlier removal
 plt.figure(figsize=(10, 6))
 plt.hist(df['duration_sec'], bins=100, edgecolor='black')
 plt.xlabel('Duration (seconds)')
@@ -198,11 +196,9 @@ plt.hist(df['tempo'], bins=100, edgecolor='black')
 plt.xlabel('Tempo (BPM)')
 plt.ylabel('Frequency')
 plt.title('Distribution of Song Tempo')
-plt.xlim(0, 250)
 plt.grid(True, linestyle='--', alpha=0.5)
 plt.tight_layout()
 plt.show()
-
 
 # Violin plot for is_popular vs energy
 sns.violinplot(x='is_popular', y='energy', data=df)
